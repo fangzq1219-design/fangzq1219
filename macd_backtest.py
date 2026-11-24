@@ -40,16 +40,16 @@ def macd_hist(close, fast, slow, sig):
 
 def backtest(df, fast, slow, sig):
     hist = macd_hist(df["close"], fast, slow, sig)
-    d = df.assign(hist=hist)
-    d["prev"] = d["hist"].shift(1)
+    d = df.assign(h=hist)
+    d["prev"] = d["h"].shift(1)
     d = d[d["date"] >= YEAR_START].reset_index(drop=True)
 
     cash, shares, entry = 1.0, 0.0, None
     trades, equity = [], []
     for _, r in d.iterrows():
-        if shares == 0 and r.prev <= 0 < r.hist:          # 绿翻红 -> 买
+        if shares == 0 and r.prev <= 0 < r.h:          # 绿翻红 -> 买
             shares, cash, entry = cash / r.close, 0.0, r
-        elif shares > 0 and r.prev >= 0 > r.hist:         # 红转绿 -> 卖
+        elif shares > 0 and r.prev >= 0 > r.h:         # 红转绿 -> 卖
             cash, shares = shares * r.close, 0.0
             trades.append((entry.date.date(), entry.close, r.date.date(), r.close, r.close / entry.close - 1))
         equity.append(cash + shares * r.close)
